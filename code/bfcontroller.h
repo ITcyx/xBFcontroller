@@ -2,6 +2,7 @@
 #ifndef XBFCONTROLLER_H
 #define XBFCONTROLLER_H
 #include "code.h"
+#include "datastructure.h"
 #include <string>
 #include <fstream>
 
@@ -25,10 +26,11 @@ namespace x
 		// 功能性函数
 		bool set_filename(std::string file_name, int cluster = 4096);  // 设置将要读取的文件名，若文件不存在或无法读取，返回false
 		bool set_cluster(int cluster = 4096);  // 设置簇的大小，不会改变当前的buffer池的内容与大小，将在下一次读取中采用新的簇的值。若输入的值小于等于零，将不会更新簇的大小且返回false
-		int get_size(int unit = code::B);  // unit ，单位，默认值为Byte。本函数为获取当前文件的大小
+		bool set_position(long long position);  // position 设置读取位置，当超过文件大小或为负数或者其他无法操作文件等情况，返回false
+		long long get_size(int unit = code::B);  // unit ，单位，默认值为Byte。本函数为获取当前文件的大小
 		int get_cluster();  // 返回cluster的值
-		int get_position();  // 返回当前读到到的字符相对文件头的距离（0即正好读取到文件头，
-		std::string read(int length = 1);  // 从当前读取的位置开始，读取指定长度的内容。若指定长度超过文件剩余大小，将只返回文件剩余大小的内容；若指定的文件因某些原因无法读取，将返回空字符串
+		long long get_position();  // 返回当前读到到的字符相对文件头的距离（0即正好读取到文件头，-1即代表没加载文件)
+		barray read(long long length = 1, long long position = -1);  // length ，从当前读取的位置开始，读取指定长度的内容。若指定长度超过文件剩余大小，将只返回文件剩余大小的内容；若指定的文件因某些原因无法读取，将返回空字符串。position ，设置读取位置，如果为负数或超过当前文件大小，将从当前位置读起。默认值-1
 		bool close();
 	};
 

@@ -108,10 +108,3 @@ bool x::bfreader::set_cluster(int cluster)
 	cn = cluster;
 	return true;
 }
-
-std::string x::bfreader::read(int length)
-{
-	std::string a;
-
-	return a;
-}
