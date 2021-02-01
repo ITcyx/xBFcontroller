@@ -22,7 +22,7 @@ x::bfreader::bfreader(std::string file_name, int cluster)
 	buffer = new unsigned char[c];
 	bi = -1;
 	bj = -1;
-	bf.open(file_name);
+	bf.open(file_name, std::ios::binary);
 	if (!bf.good())
 	{
 		fn = "";
@@ -41,7 +41,7 @@ x::bfreader::~bfreader()
 }
 
 
-bool x::bfreader::set_file_name(std::string file_name, int cluster)
+bool x::bfreader::set_filename(std::string file_name, int cluster)
 {
 	if (fn == "")
 	{
