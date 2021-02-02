@@ -156,8 +156,29 @@ long long x::bfreader::get_position()
 	return p;
 }
 
-x::barray x::bfreader::read(long long length, long long positon)
+x::barray x::bfreader::read(long long length, long long position)
 {
-	if(status==code::INIT)
+	if (status == code::INIT || length <= 0 || s == 0 || position >= s || (position < 0 && p == s))
 		return barray();
+	barray a;
+	if (position < 0)
+	{
+		if (p + length - 1 < s)
+			a.set_length(length);
+		else
+			a.set_length(s - p);
+
+	}
+}
+
+void x::bfreader::close()
+{
+	if (status == code::INIT)
+		return;
+	bf.close();
+	bf.clear();
+	fn = "";
+	bi = bj = cn = -1;
+	s = p = -1;
+	status = code::NORMAL;
 }
