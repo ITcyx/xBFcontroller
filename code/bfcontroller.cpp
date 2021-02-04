@@ -104,10 +104,9 @@ bool x::bfreader::set_cluster(int cluster)
 		c = cluster;
 		return true;
 	}
-	c = cn;
+	cn = cluster;
 	return true;
 }
-
 
 bool x::bfreader::set_position(long long position)
 {
@@ -156,18 +155,66 @@ long long x::bfreader::get_position()
 	return p;
 }
 
-x::barray x::bfreader::read(long long length, long long position)
+x::barray_long x::bfreader::read(long long length, long long position)
 {
 	if (status == code::INIT || length <= 0 || s == 0 || position >= s || (position < 0 && p == s))
-		return barray();
-	barray a;
+		return barray_long();
+	barray_long a;
+	long long cm, i, j;
 	if (position < 0)
 	{
+		if (p < 0)
+			p = 0;
 		if (p + length - 1 < s)
 			a.set_length(length);
 		else
 			a.set_length(s - p);
-
+		if (bi < 0)
+		{
+			if (cn > 0)
+			{
+				delete[]buffer;
+				c = cn;
+				cn = -1;
+				buffer = new unsigned char[c];
+			}
+			bf.read((char*)buffer, c);
+			cm = a.get_length() / c;
+			for (i = 0; i < cm; ++i)
+			{
+				for (j = 0; j < c; ++j)
+					a[i*c + j] = buffer[j];
+				bf.read((char*)buffer, c);
+				p = bf.tellg();
+			}
+			for (j = 0; j < a.get_length() - cm * c; ++j)
+				a[i*c + j] = buffer[j];
+			bi = a.get_length() - cm * c;
+			bj = bf.tellg() - p;
+			p = bi;
+			return a;
+		}
+		else
+		{
+			for (j = bi; j < bj&&j < a.get_length(); ++j)
+				a[j - bi] = buffer[j];
+			// ---------- flag ----------
+			bf.read((char*)buffer, c);
+			cm = a.get_length() / c;
+			for (i = 0; i < cm; ++i)
+			{
+				for (j = 0; j < c; ++j)
+					a[i*c + j] = buffer[j];
+				bf.read((char*)buffer, c);
+				p = bf.tellg();
+			}
+			for (j = 0; j < a.get_length() - cm * c; ++j)
+				a[i*c + j] = buffer[j];
+			bi = a.get_length() - cm * c;
+			bj = bf.tellg() - p;
+			p = bi;
+			return a;
+		}
 	}
 }
 

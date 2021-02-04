@@ -31,7 +31,7 @@ namespace x
 		long long get_size(int unit = code::B);  // unit ，单位，默认值为Byte。本函数为获取当前文件的大小。如果为负数，即未打开文件
 		int get_cluster();  // 返回cluster的值
 		long long get_position();  // 返回当前读到到的字符相对文件头的距离（0即正好读取到文件头，-1即代表没加载文件)
-		barray read(long long length = 1, long long position = -1);  // length ，从当前读取的位置开始，读取指定长度的内容。若指定长度超过文件剩余大小，将只返回文件剩余大小的内容；若length小于等于0，则返回空barray；若指定的文件因某些原因无法读取，将返回空barray。position ，设置读取位置，如果为负数或超过当前文件大小，将从当前位置读起。默认值-1
+		barray_long read(long long length = 1, long long position = -1);  // length ，从当前读取的位置开始，读取指定长度的内容。若指定长度超过文件剩余大小，将只返回文件剩余大小的内容；若length小于等于0，则返回空barray；若指定的文件因某些原因无法读取，将返回空barray。position ，设置读取位置，如果为负数或超过当前文件大小，将从当前位置读起。默认值-1
 		void close();
 	};
 
