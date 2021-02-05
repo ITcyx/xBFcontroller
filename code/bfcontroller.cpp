@@ -16,7 +16,7 @@ x::bfreader::bfreader(int cluster)
 	s = -1;
 }
 
-x::bfreader::bfreader(std::string file_name, int cluster)
+x::bfreader::bfreader(const std::string& file_name, int cluster)
 {
 	if (cluster <= 0)
 		cluster = 4096;
@@ -51,7 +51,7 @@ x::bfreader::~bfreader()
 	delete[]buffer;
 }
 
-bool x::bfreader::set_filename(std::string file_name, int cluster)
+bool x::bfreader::set_filename(const std::string& file_name, int cluster)
 {
 	if (cluster <= 0)
 		cluster = 4096;
@@ -108,7 +108,7 @@ bool x::bfreader::set_cluster(int cluster)
 	return true;
 }
 
-bool x::bfreader::set_position(long long position)
+bool x::bfreader::set_position(const long long& position)
 {
 	if (fn == "")
 		return false;
@@ -127,7 +127,7 @@ bool x::bfreader::set_position(long long position)
 	return true;
 }
 
-long long x::bfreader::get_size(int unit)
+long long x::bfreader::get_size(const int& unit) const
 {
 	if (s < 0)
 		return s;
@@ -145,17 +145,17 @@ long long x::bfreader::get_size(int unit)
 	return -1;
 }
 
-int x::bfreader::get_cluster()
+int x::bfreader::get_cluster() const
 {
 	return c;
 }
 
-long long x::bfreader::get_position()
+long long x::bfreader::get_position() const
 {
 	return p;
 }
 
-x::barray_long x::bfreader::read(long long length, long long position)
+x::barray_long x::bfreader::read(const long long& length, const long long& position)
 {
 	if (status == code::INIT || length <= 0 || s == 0 || position >= s || (position < 0 && p == s))
 		return barray_long();
