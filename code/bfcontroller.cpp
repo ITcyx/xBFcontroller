@@ -182,10 +182,10 @@ x::barray_long x::bfreader::read(long long length, long long position)
 			cm = a.get_length() / c;
 			for (i = 0; i < cm; ++i)
 			{
+				p = bf.tellg();
 				for (j = 0; j < c; ++j)
 					a[i*c + j] = buffer[j];
 				bf.read((char*)buffer, c);
-				p = bf.tellg();
 			}
 			for (j = 0; j < a.get_length() - cm * c; ++j)
 				a[i*c + j] = buffer[j];
@@ -196,26 +196,67 @@ x::barray_long x::bfreader::read(long long length, long long position)
 		}
 		else
 		{
-			for (j = bi; j < bj&&j < a.get_length(); ++j)
+			for (j = bi; j < bj&&j < (a.get_length() + bi); ++j)
 				a[j - bi] = buffer[j];
-			// ---------- flag ----------
-			bf.read((char*)buffer, c);
-			cm = a.get_length() / c;
-			for (i = 0; i < cm; ++i)
+			long long g = j - bi;
+			bi = j;
+			if (a.get_length() - g > 0)
 			{
-				for (j = 0; j < c; ++j)
-					a[i*c + j] = buffer[j];
+				if (cn > 0)
+				{
+					delete[]buffer;
+					c = cn;
+					cn = -1;
+					buffer = new unsigned char[c];
+				}
+				cm = (a.get_length() - g) / c;
 				bf.read((char*)buffer, c);
-				p = bf.tellg();
+				for (i = 0; i < cm; ++i)
+				{
+					p = bf.tellg();
+					for (j = 0; j < c; ++j)
+						a[i*c + j + g] = buffer[j];
+					bf.read((char*)buffer, c);
+				}
+				for (j = 0; j < a.get_length() - g - cm * c; ++j)
+					a[i*c + j + g] = buffer[j];
+				bi = a.get_length() - g - cm * c;
+				bj = bf.tellg() - p;
+				p = bi;
+				return a;
 			}
-			for (j = 0; j < a.get_length() - cm * c; ++j)
-				a[i*c + j] = buffer[j];
-			bi = a.get_length() - cm * c;
-			bj = bf.tellg() - p;
 			p = bi;
 			return a;
 		}
 	}
+	if (cn > 0)
+	{
+		delete[]buffer;
+		c = cn;
+		cn = -1;
+		buffer = new unsigned char[c];
+	}
+	bf.seekg(position, std::ios::beg);
+	p = bf.tellg();
+	if (p + length - 1 < s)
+		a.set_length(length);
+	else
+		a.set_length(s - p);
+	bf.read((char*)buffer, c);
+	cm = a.get_length() / c;
+	for (i = 0; i < cm; ++i)
+	{
+		p = bf.tellg();
+		for (j = 0; j < c; ++j)
+			a[i*c + j] = buffer[j];
+		bf.read((char*)buffer, c);
+	}
+	for (j = 0; j < a.get_length() - cm * c; ++j)
+		a[i*c + j] = buffer[j];
+	bi = a.get_length() - cm * c;
+	bj = bf.tellg() - p;
+	p = bi;
+	return a;
 }
 
 void x::bfreader::close()
