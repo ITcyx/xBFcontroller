@@ -60,6 +60,7 @@ bool x::bfreader::set_filename(const std::string& file_name, int cluster)
 		c = cluster;
 		delete[]buffer;
 		buffer = new unsigned char[c];
+		bi = bj = -1;
 	}
 	cn = -1;
 	if (fn == "")
@@ -270,3 +271,195 @@ void x::bfreader::close()
 	s = p = -1;
 	status = code::NORMAL;
 }
+
+
+
+
+
+
+
+
+
+
+x::bfwriter::bfwriter(int cluster)
+{
+	fn = "";
+	if (cluster <= 0)
+		cluster = 4096;
+	c = cluster;
+	s = -1;
+	buffer = new unsigned char[c];
+	bi = -1;
+	status = code::INIT;
+	p = -1;
+	s = -1;
+}
+
+x::bfwriter::bfwriter(const std::string& file_name, int cluster)
+{
+	if (cluster <= 0)
+		cluster = 4096;
+	c = cluster;
+	buffer = new unsigned char[c];
+	bf.open(file_name, std::ios::binary | std::ios::app);
+	bf.close();
+	bf.clear();
+	bf.open(file_name, std::ios::binary | std::ios::in);
+	if (!bf.good())
+	{
+		fn = "";
+		status = code::INIT;
+		p = -1;
+		s = -1;
+		bi = -1;
+	}
+	else
+	{
+		fn = file_name;
+		status = code::NORMAL;
+		bf.seekp(0, std::ios::end);
+		s = bf.tellp();
+		bf.seekp(0, std::ios::beg);
+		p = 0;
+		bi = 0;
+	}
+}
+
+x::bfwriter::~bfwriter()
+{
+	bf.close();
+	bf.clear();
+	delete[]buffer;
+}
+
+bool x::bfwriter::set_filename(const std::string& file_name, int cluster)
+{
+	if (cluster <= 0)
+		cluster = 4096;
+	if (c != cluster)
+	{
+		if (bi <= 0)
+		{
+			c = cluster;
+			delete[]buffer;
+			buffer = new unsigned char[c];
+		}
+		else
+		{
+			bf.write((char*)buffer, bi);
+			c = cluster;
+			delete[]buffer;
+			buffer = new unsigned char[c];
+			bi = 0;
+		}
+	}
+	if (fn == "")
+	{
+		bf.open(file_name, std::ios::binary | std::ios::app);
+		bf.close();
+		bf.clear();
+		bf.open(file_name, std::ios::binary | std::ios::in);
+	}
+	else
+	{
+		if (bi > 0)
+		{
+			bf.write((char*)buffer, bi);
+			bi = 0;
+		}
+		bf.close();
+		bf.clear();
+		fn = "";
+		bf.open(file_name, std::ios::binary | std::ios::app);
+		bf.close();
+		bf.clear();
+		bf.open(file_name, std::ios::binary | std::ios::in);
+	}
+	if (!bf.good())
+	{
+		bi = -1;
+		s = -1;
+		p = -1;
+		status = code::INIT;
+		return false;
+	}
+	fn = file_name;
+	bi = 0;
+	bf.seekp(0, std::ios::end);
+	s = bf.tellp();
+	bf.seekp(0, std::ios::beg);
+	p = 0;
+	status = code::NORMAL;
+	return true;
+}
+
+bool x::bfwriter::set_cluster(int cluster)
+{
+	if (cluster <= 0)
+		return false;
+	if (cluster == c)
+		return true;
+	if (bi <= 0)
+	{
+		c = cluster;
+		delete[]buffer;
+		buffer = new unsigned char[c];
+		return true;
+	}
+	bf.write((char*)buffer, bi);
+	c = cluster;
+	delete[]buffer;
+	buffer = new unsigned char[c];
+	bi = 0;
+	return true;
+}
+
+bool x::bfwriter::set_position(const long long& position)
+{
+	if (fn == "")
+		return false;
+	if (position > s || position < 0)
+		return false;
+	if (bi == 0)
+	{
+		p = position;
+		bf.seekp(p, std::ios::beg);
+		return true;
+	}
+	bf.write((char*)buffer, bi);
+	bi = 0;
+	p = position;
+	bf.seekp(p, std::ios::beg);
+	return true;
+}
+
+long long x::bfwriter::get_size(const int& unit) const
+{
+	if (s < 0)
+		return s;
+	if (unit == code::B)
+		return s;
+	if (unit >= code::KIB&&unit <= code::PIB)
+		return (s >> (10 * (code::KIB - 1023)));
+	if (unit >= code::KB&&unit <= code::PB)
+	{
+		long long t = 1000;
+		for (int i = 0; i < (code::KB - 1000); ++i)
+			t *= 1000;
+		return s / t;
+	}
+	return -1;
+}
+
+int x::bfwriter::get_cluster() const
+{
+	return c;
+}
+
+long long x::bfwriter::get_position() const
+{
+	return p;
+}
+
+
+

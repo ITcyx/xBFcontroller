@@ -41,7 +41,7 @@ namespace x
 		std::ofstream bf;
 		std::string fn;
 		unsigned char *buffer;
-		int c, status, bi, bj, cn;
+		int c, status, bi;
 		long long p, s;
 	public:
 		// 构造函数、析构函数
