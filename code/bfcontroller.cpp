@@ -347,6 +347,7 @@ bool x::bfwriter::set_filename(const std::string& file_name, int cluster)
 		else
 		{
 			bf.write((char*)buffer, bi);
+			bf.flush();
 			c = cluster;
 			delete[]buffer;
 			buffer = new unsigned char[c];
@@ -365,6 +366,7 @@ bool x::bfwriter::set_filename(const std::string& file_name, int cluster)
 		if (bi > 0)
 		{
 			bf.write((char*)buffer, bi);
+			bf.flush();
 			bi = 0;
 		}
 		bf.close();
@@ -407,6 +409,7 @@ bool x::bfwriter::set_cluster(int cluster)
 		return true;
 	}
 	bf.write((char*)buffer, bi);
+	bf.flush();
 	c = cluster;
 	delete[]buffer;
 	buffer = new unsigned char[c];
@@ -427,6 +430,7 @@ bool x::bfwriter::set_position(const long long& position)
 		return true;
 	}
 	bf.write((char*)buffer, bi);
+	bf.flush();
 	bi = 0;
 	p = position;
 	bf.seekp(p, std::ios::beg);
@@ -461,5 +465,60 @@ long long x::bfwriter::get_position() const
 	return p;
 }
 
+bool x::bfwriter::write(const x::barray_long& content, const long long& position, const int& operation)
+{
+	if (operation != code::COVER || operation != code::INSERT)
+		return false;
+	if (fn == "")
+		return false;
+	if (content.get_length() == 0)
+		return true;
+	if (position > s)
+		return false;
+	if (position != p && position >= 00 && bi > 0)
+	{
+		bf.write((char*)buffer, bi);
+		bf.flush();
+		bi = 0;
+	}
+	if (position >= 0)
+	{
+		p = position;
+		bf.seekp(p, std::ios::beg);
+	}
+	long long bj, t;
+	if (operation == code::COVER || p == s)
+	{
+		for (bj = 0; bj < content.get_length(); ++bj)
+		{
+			if (bi == c)
+			{
+				bf.write((char*)buffer, bi);
+				bf.flush();
+				bi = 0;
+			}
+			buffer[bi] = content[bj];
+			++bi;
+		}
+		p = bf.tellp();
+		p += bi;
+		if (s < p)
+			s = p;
+		return true;
+	}
+	if (bi > 0)
+	{
+		bf.write((char*)buffer, bi);
+		bf.flush();
+		bi = 0;
+	}
+	std::ofstream bfo;
+	std::ifstream bfi;
+	std::string bfon = "a";
+	while (true) // waiting for fixing
+	{
+		bfo.open("test.dat", std::ios::binary | std::ios::app | std::ios::out, _SH_DENYWR);
+	}
+}
 
 

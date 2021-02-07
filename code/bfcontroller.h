@@ -56,7 +56,7 @@ namespace x
 		long long get_size(const int& unit = code::B) const;  // unit ，单位，默认值为Byte。本函数为获取当前文件的大小。如果为负数，即未打开文件
 		int get_cluster() const;  // 返回cluster的值
 		long long get_position() const;  // 返回当前写到的字符相对文件头的距离（0即正好写入到文件头，-1即代表没加载文件)
-		bool writer(const barray_long& content, const long long& position = -1);  // content ，从写入的位置开始，往后写入content的内容。position ，设置写入的位置，如果为负数或超过当前文件大小，将从当前位置写起。默认值-1
+		bool write(const barray_long& content, const long long& position = -1, const int& operation = code::COVER);  // content ，从写入的位置开始，往后写入content的内容。position ，设置写入的位置，如果为负数或超过当前文件大小，将从当前位置写起。默认值-1
 		void close();
 	};
 }
