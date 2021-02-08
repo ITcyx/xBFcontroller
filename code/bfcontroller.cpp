@@ -514,11 +514,106 @@ bool x::bfwriter::write(const x::barray_long& content, const long long& position
 	}
 	std::ofstream bfo;
 	std::ifstream bfi;
-	std::string bfon = "a";
-	while (true) // waiting for fixing
+	std::string bfon = "";
+	while (true)
 	{
-		bfo.open("test.dat", std::ios::binary | std::ios::app | std::ios::out, _SH_DENYWR);
+		bfo.open(fn + bfon + ".xcache", std::ios::binary | std::ios::app | std::ios::out, _SH_SECURE);
+		if (bfo.good())
+			break;
+		bfo.clear();
+		if (bfon.length() == 0)
+			bfon += "a";
+		else
+		{
+			if (bfon[bfon.length() - 1] < 'z')
+				++bfon[bfon.length() - 1];
+			else
+				bfon += "a";
+		}
+		if (bfon.length() > 50)
+			return false;
 	}
+	bfi.open(fn, std::ios::binary);
+	bfi.seekg(p, std::ios::beg);
+	t = (s - p) / c;
+	for (bj = 0; bj < t; ++bj)
+	{
+		bfi.read((char*)buffer, c);
+		bfo.write((char*)buffer, c);
+	}
+	if (bj < t*c)
+	{
+		bfi.read((char*)buffer, bj - t * c);
+		bfo.write((char*)buffer, bj - t * c);
+	}
+	bfo.flush();
+	bfi.close();
+	bfi.clear();
+	for (bj = 0; bj < content.get_length(); ++bj)
+	{
+		if (bi == c)
+		{
+			bf.write((char*)buffer, bi);
+			bf.flush();
+			bi = 0;
+		}
+		buffer[bi] = content[bj];
+		++bi;
+	}
+	if (bi > 0)
+	{
+		bf.write((char*)buffer, bi);
+		bf.flush();
+		bi = 0;
+	}
+	p = bf.tellp();
+	bfi.open(fn + bfon + ".xcache", std::ios::binary);
+	for (bj = 0; bj < t; ++bj)
+	{
+		bfi.read((char*)buffer, c);
+		bf.write((char*)buffer, c);
+		bf.flush();
+	}
+	if (bj < t*c)
+	{
+		bfi.read((char*)buffer, bj - t * c);
+		bf.write((char*)buffer, bj - t * c);
+		bf.flush();
+	}
+	bfi.close();
+	bfi.clear();
+	bfo.close();
+	bfo.clear();
+	p = bf.tellp();
+	s = 0;
+	bi = 0;
+	return true;
 }
 
+void x::bfwriter::close()
+{
+	if (bi > c)
+	{
+		bf.write((char*)buffer, bi);
+		bf.flush();
+		bi = 0;
+	}
+	bf.close();
+	bf.clear();
+	fn = "";
+	p = -1;
+	s = -1;
+	bi = -1;
+}
 
+bool x::bfwriter::flush()
+{
+	if (bi > 0)
+	{
+		bf.write((char*)buffer, bi);
+		bf.flush();
+		bi = 0;
+		return true;
+	}
+	return false;
+}

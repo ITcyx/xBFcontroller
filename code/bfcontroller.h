@@ -32,7 +32,7 @@ namespace x
 		int get_cluster() const;  // 返回cluster的值
 		long long get_position() const;  // 返回当前读到的字符相对文件头的距离（0即正好读取到文件头，-1即代表没加载文件)
 		barray_long read(const long long& length = 1, const long long& position = -1);  // length ，从当前读取的位置开始，读取指定长度的内容。若指定长度超过文件剩余大小，将只返回文件剩余大小的内容；若length小于等于0，则返回空barray；若指定的文件因某些原因无法读取，将返回空barray。position ，设置读取位置，如果为负数或超过当前文件大小，将从当前位置读起。默认值-1
-		void close();
+		void close();  // 关闭文件
 	};
 
 	class bfwriter
@@ -57,7 +57,8 @@ namespace x
 		int get_cluster() const;  // 返回cluster的值
 		long long get_position() const;  // 返回当前写到的字符相对文件头的距离（0即正好写入到文件头，-1即代表没加载文件)
 		bool write(const barray_long& content, const long long& position = -1, const int& operation = code::COVER);  // content ，从写入的位置开始，往后写入content的内容。position ，设置写入的位置，如果为负数或超过当前文件大小，将从当前位置写起。默认值-1
-		void close();
+		bool flush();  // 清空buffer池
+		void close();  // 关闭文件
 	};
 }
 
