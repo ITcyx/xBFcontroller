@@ -517,7 +517,7 @@ bool x::bfwriter::write(const x::barray_long& content, const long long& position
 	std::string bfon = "";
 	while (true)
 	{
-		bfo.open(fn + bfon + ".xcache", std::ios::binary | std::ios::app | std::ios::out, _SH_SECURE);
+		bfo.open(fn + bfon + ".xcache", std::ios::binary | std::ios::app | std::ios::out, _SH_DENYWR);
 		if (bfo.good())
 			break;
 		bfo.clear();
